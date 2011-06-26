@@ -221,6 +221,12 @@ namespace :test do
 	end
 end
 
+namespace :messages do
+	exec :return_to_source do |cmd|
+		cmd.command = FileList["#{lib_root}/*NServiceBus*/tools/ReturnToSourceQueue.exe"].first
+	end
+end
+
 namespace :util do
 
 	task :signals do
