@@ -50,3 +50,6 @@ _ReSharper*/
 
 #rake-related files
 Gemfile.lock
+
+#nuget packages
+[Pp]ackages
