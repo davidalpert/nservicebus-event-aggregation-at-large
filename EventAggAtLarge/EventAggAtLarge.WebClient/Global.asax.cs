@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using NServiceBus;
+using StructureMap;
 
 namespace EventAggAtLarge.WebClient
 {
@@ -26,7 +28,21 @@ namespace EventAggAtLarge.WebClient
                 "{controller}/{action}/{id}", // URL with parameters
                 new { controller = "Home", action = "Index", id = UrlParameter.Optional } // Parameter defaults
             );
+        }
 
+        private void InitializeNServiceBus()
+        {
+            NServiceBus.Configure
+                .WithWeb()                      // scan the /bin folder of the web app
+                .Log4Net()                      // wire up log4net 
+                .StructureMapBuilder(           // use StructureMap for IoC
+                    ObjectFactory.Container     // ...with the given Container 
+                 )
+                .XmlSerializer()                // serialize messages as XML
+                .MsmqTransport()                // use MSMQ as transactional transport
+                .UnicastBus()                   // use unicast messaging
+                .CreateBus()
+                .Start();
         }
 
         protected void Application_Start()
@@ -35,6 +51,8 @@ namespace EventAggAtLarge.WebClient
 
             RegisterGlobalFilters(GlobalFilters.Filters);
             RegisterRoutes(RouteTable.Routes);
+
+            InitializeNServiceBus();
         }
     }
 }

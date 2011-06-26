@@ -54,7 +54,7 @@ namespace :build do
 
 	desc "Build the project"
 	
-	msbuild :all, [:config] => ['migrate:update_connection_strings_from_web_config'] do |msb, args|
+	msbuild :all, [:config] do |msb, args|
 		configuration = :Debug
 
 		if args[:config] != nil && args[:config] != 'local' then

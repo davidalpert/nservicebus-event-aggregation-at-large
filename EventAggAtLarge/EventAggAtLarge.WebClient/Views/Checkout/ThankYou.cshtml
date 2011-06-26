@@ -1,0 +1,31 @@
+﻿@model EventAggAtLarge.WebClient.Controllers.PayForm
+
+@{
+    ViewBag.Title = "ThankYou";
+}
+
+<h2>Thank you!</h2>
+
+<p>Your payment has been received and will be processed in sequence.</p>
+
+<p>You will receive an email receipt within 24 hours...</p>
+
+<fieldset>
+    <legend>Payment Details</legend>
+
+    <div class="display-label">OrderNumber</div>
+    <div class="display-field">@Model.OrderNumber</div>
+
+    <div class="display-label">Amount</div>
+    <div class="display-field">@String.Format("{0:F}", Model.Amount)</div>
+
+    <div class="display-label">Payee</div>
+    <div class="display-field">@Model.Payee</div>
+
+    <div class="display-label">CardNumber</div>
+    <div class="display-field">@Model.CardNumber</div>
+</fieldset>
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>
+

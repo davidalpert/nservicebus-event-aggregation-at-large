@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Pay";
+}
+
+@model EventAggAtLarge.WebClient.Controllers.PayForm
+
+<h2>Pay Now!</h2>
+
+@using(Html.BeginForm()) {
+
+    @Html.EditorForModel();
+
+    <input type="submit" value="submit" />
+}
+
