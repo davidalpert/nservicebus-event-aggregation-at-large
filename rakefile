@@ -40,13 +40,32 @@ desc 'Default build'
 task :default => ["clean", "build:all"]
 
 desc 'Setup requirements to build and deploy'
-task :setup => ["setup:dep:download", "setup:dep:local"]
+task :setup => ["setup:dep"]
 
 namespace :setup do
+
+	task :dep => ["setup:dep:gems", "setup:dep:packages", "setup:dep:os"]
+
 	namespace :dep do
-		task :download do 
+
+		desc "Download and install gems from the Gemfile"
+		task :gems do
 			system "bundle install --system"
-		end	
+		end
+
+		desc "Setup dependencies for nuget packages"
+		task :packages do
+			FileList["**/packages.config"].each do |file|
+				sh "nuget install #{file} /OutputDirectory Packages"
+			end
+		end
+	
+		desc "Setup dependencies for this OS (x86/x64)"
+		task :os do
+			folders = []
+			`find #{lib_root} -name 'binaries'`.each_line {|f| folders.push f.strip}
+			setup_os(nil,folders) 
+		end
 	end
 end
 
@@ -290,3 +309,18 @@ end
 def tool(package, tool)
   File.join(Dir.glob(File.join(package_root,"#{package}.*")).sort.last, "tools", tool)
 end
+
+def setup_os(target = nil, folders_to_setup = nil)
+	target ||= File.exist?('c:\Program Files (x86)') ? 64 : 32
+	abort "no folders to set up!" if folders_to_setup.nil?
+	puts "**** Setting up OS #{target} bits"
+	folders_to_setup.each { |folder_path| 
+		pattern = "#{folder_path}/{x,}#{target}/*.*"
+		#puts "**** looking in: #{pattern}"
+		files = FileList["#{pattern}"].each { |f|
+			puts "**** Using #{f}"
+			FileUtils.cp(f, folder_path)
+		}
+	}
+end
+
