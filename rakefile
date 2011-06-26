@@ -31,7 +31,7 @@ msbuild_exe = File.join(ENV['windir'], 'Microsoft.NET','Framework',  'v4.0.30319
 CLEAN.include("#{source_root}/**/bin", "#{source_root}/**/obj", "#{test_root}/**/obj", "#{test_root}/**/bin")
 
 CLOBBER.include("./**/_*", "./**/*.user", "./**/*.cache", "./**/*.suo", "TestResult.xml")
-CLOBBER.exclude("./**/_catalogs", "./**/_controlTemplates", "./**/_layouts", "./**/_direct", "./**/_defaultView")
+CLOBBER.exclude("./**/_catalogs", "./**/_controlTemplates", "./**/_layouts", "#{package_root}")
 
 # ---------------------------------------------------------------------------------------------------------
 # and so begin the build script tasks/targets
@@ -73,7 +73,7 @@ namespace :build do
 
 	desc "Build the project"
 	
-	msbuild :all, [:config] do |msb, args|
+	msbuild :all, [:config] => [:setup] do |msb, args|
 		configuration = :Debug
 
 		if args[:config] != nil && args[:config] != 'local' then
