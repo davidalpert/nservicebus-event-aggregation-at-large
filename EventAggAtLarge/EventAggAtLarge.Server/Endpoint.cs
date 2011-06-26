@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NServiceBus;
 
 namespace EventAggAtLarge.Server
 {
-    class Program
+    public class Endpoint : IConfigureThisEndpoint, AsA_Server
     {
-        static void Main(string[] args)
-        {
-        }
     }
 }
