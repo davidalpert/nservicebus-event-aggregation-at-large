@@ -1,0 +1,292 @@
+require 'rubygems'    
+require 'bundler'
+
+system "bundle install --system"
+
+require 'albacore'
+require 'rake/clean'
+require 'xmlsimple'
+
+include FileUtils
+
+# include our custom albacore tasks
+FileList["./Tools/albacore/**/*.rb"].each { |f| require f }
+
+source_root = "./EventAggAtLarge"
+test_root = "#{source_root}"
+lib_root = "./lib"
+package_root = "./Packages"
+tools_root = "./tools"
+webclient_intermediate_output_path = File.join(source_root, "obj")
+
+build_root = "./build" # used as a pre-deployment staging folder
+webclient_build_root = "#{build_root}/wwww"
+server_build_root = "#{build_root}/server"
+
+solution_file = FileList["./**/*.sln"].first
+commit = Git.open(".").log.first.sha[0..10] rescue 'na'
+version = "0.0.1"
+msbuild_exe = File.join(ENV['windir'], 'Microsoft.NET','Framework',  'v4.0.30319', 'MSBuild.exe')
+
+CLEAN.include("#{source_root}/**/bin", "#{source_root}/**/obj", "#{test_root}/**/obj", "#{test_root}/**/bin")
+
+CLOBBER.include("./**/_*", "./**/*.user", "./**/*.cache", "./**/*.suo", "TestResult.xml")
+CLOBBER.exclude("./**/_catalogs", "./**/_controlTemplates", "./**/_layouts", "./**/_direct", "./**/_defaultView")
+
+# ---------------------------------------------------------------------------------------------------------
+# and so begin the build script tasks/targets
+
+desc 'Default build'
+task :default => ["clean", "build:all"]
+
+desc 'Setup requirements to build and deploy'
+task :setup => ["setup:dep:download", "setup:dep:local"]
+
+namespace :setup do
+	namespace :dep do
+		task :download do 
+			system "bundle install --system"
+		end	
+	end
+end
+
+namespace :build do
+
+	desc "Build the project"
+	
+	msbuild :all, [:config] => ['migrate:update_connection_strings_from_web_config'] do |msb, args|
+		configuration = :Debug
+
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		msb.properties :configuration => configuration
+		msb.targets :Clean, :Build
+		msb.solution = solution_file
+	end
+
+	desc "Rebuild the project"
+	task :re => ["clean", "build:all"]
+
+	desc "Run the ASP.NET Compiler on the MVC Views via the web project file"
+	msbuild :views, [:config] do |msb, args|
+
+		Rake::Task["build:all"].invoke(args[:config])
+
+		configuration = :Debug
+
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		msb.properties :configuration => configuration
+		msb.targets :CompileViews
+		msb.solution = build_src
+	end
+
+	msbuild :worker, [:config] => ['migrate:update_connection_strings_from_web_config'] do |msb, args|
+		configuration = :Debug
+
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		msb.properties :configuration => configuration
+		msb.targets :Clean, :Build
+		msb.solution = background_worker_build_src
+	end
+	
+end
+
+desc "Run unit tests"
+task :test => ["clean", "build:all", "test:unit", "test:integration"]
+
+desc "Run view tests"
+task :views => ["clean", "test:views"]
+
+desc "Run integration tests"
+task :integration => ["clean", "build:all", "test:integration"]
+
+desc "Run acceptance tests (scripted features)"
+task :features, [:tag] do |t, args|
+	Rake::Task["test:features"].invoke(args.tag)
+end  
+
+namespace :test do
+	addin = ENV['teamcity.dotnet.nunitaddin']
+	addin = "#{addin}-2.5.5.dll" if addin
+	
+	desc 'Run all tests (unit & acceptance)'
+	task :all, [:config] do |t, args|
+		Rake::Task["test:unit"].invoke(args[:config])
+		Rake::Task["test:integration"].invoke(args[:config])
+		Rake::Task["build:views"].invoke()
+		Rake::Task["test:features"].invoke()
+	end
+
+	task :views => ['build:views']
+
+	# Our WatiN-based acceptance tests need to be built and run as 32-bit in order to access the browsers' DOMs
+	desc 'Run unit tests'
+	nunit :unit, [:config] do |nunit, args|
+		Rake::Task["build:all"].invoke(args[:config])
+		
+		configuration = :Debug
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		puts "******* Then env teamcity.dotnet.nunitlauncher #{ENV['teamcity.dotnet.nunitlauncher']}"
+		puts "******* Then env teamcity.dotnet.nunitaddin #{ENV['teamcity.dotnet.nunitaddin']}"
+		FileUtils.copy(addin, "./tools/NUnit/addins") if addin	
+		nunit.command = "./tools/NUnit/nunit-console-x86.exe"
+		assemblies = "#{test_root}/**/bin/#{configuration}/*.Tests.dll"
+		puts "looking for #{assemblies}"
+		nunit.assemblies = FileList[assemblies]
+	end
+
+	desc 'Run integration tests'
+	nunit :integration, [:config] do |nunit, args|
+		Rake::Task["build:all"].invoke(args[:config])
+
+		configuration = :Debug
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		puts "******* Then env teamcity.dotnet.nunitlauncher #{ENV['teamcity.dotnet.nunitlauncher']}"
+		puts "******* Then env teamcity.dotnet.nunitaddin #{ENV['teamcity.dotnet.nunitaddin']}"
+		FileUtils.copy(addin, "./tools/NUnit/addins") if addin	
+		nunit.command = "./tools/NUnit/nunit-console-x86.exe"
+		assemblies = "#{test_root}/**/bin/#{configuration}/*.Integration.dll"
+		puts "looking for #{assemblies}"
+		nunit.options '/noshadow'
+		nunit.assemblies = FileList[assemblies]
+	end
+
+	desc 'Run acceptance tests (i.e. Test features)'
+	task :features, [:tag, :config] => [:run_features,:run_features_cleanup]
+
+	nunit :run_features, [:tag, :config] => ["build:all", "build:views", :ensure_log_folder_exists, :kickstart_iisexpress, :remove_watin_screenshots] do |nunit, args|
+		configuration = :Debug
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		assemblies = "#{test_root}/**/bin/#{configuration}/*.Acceptance.dll"
+		puts
+		puts "looking for #{assemblies}"
+		puts
+		puts "Running acceptance tests..."
+		FileUtils.copy(addin, "./tools/NUnit/addins") if addin		
+		# WatiN-based acceptance tests need to be built and run as 32-bit in order to access IE's DOM
+		nunit.command = "./tools/NUnit/nunit-console-x86.exe" 
+		nunit.assemblies = FileList[assemblies]
+		nunit.options "/exclude wip" if ( args.tag.nil? ) # ignore @wip as "work in progress" and not ready for testing
+		puts "... only those tagged: #{args.tag}" unless ( args.tag.nil? )
+		nunit.options "/exclude wip /include #{args.tag}" unless ( args.tag.nil? )
+		puts
+	end
+
+	task :remove_watin_screenshots, [:config] do | t, args |
+		configuration = :Debug
+		if args[:config] != nil && args[:config] != 'local' then
+			configuration = args[:config]
+		end
+
+		FileList["#{test_root}/**/bin/#{configuration}/*.png"].each do |f|
+			puts "removing: #{f}"
+			rm f
+		end
+	end
+end
+
+namespace :util do
+
+	task :signals do
+		Signal.list.each do |s|
+			puts s
+		end
+	end
+
+	task :rm_orig do
+		FileList["./**/*.orig"].each { |f| rm f }
+	end
+
+	task :kickstart_iisexpress do
+
+		# this task is a workaround for the following issue: http://stackoverflow.com/questions/4605750/iis-express-from-command-line
+
+		put_banner('starting IIS Express w/ no arguments to make sure it runs...')
+
+		path_to_iisExpress = File.join(tools_root, 'IIS Express', 'iisexpress.exe')
+
+		output = IO.popen(path_to_iisExpress) do |pipe|
+
+			'IIS Express started'.split(//).each do |c|
+				putc c
+			end
+			(1..5).each do 
+				sleep 1 #seconds
+				putc '.'
+			end
+
+			Process.kill("KILL", pipe.pid)
+
+			out = pipe.read
+
+			pipe.close
+
+			puts 'IIS Express stopped; output was:'
+			puts
+
+			out
+		end
+
+		puts output
+
+		put_banner('IIS Express successfully kickstarted.')
+	end
+end
+
+def put_banner(text)
+	puts
+	puts "-------------------------------------------------------------"
+	puts text
+	puts "-------------------------------------------------------------"
+	puts
+end
+
+def resolve_profile(profileName)
+	profile = $deployment_profiles["#{profileName}"]
+
+	if profile.nil? then
+		puts
+		puts "don't recognize profile '#{profileName}'; using 'local'"
+		puts
+		profileName = 'local'
+		profile = $deployment_profiles["#{profileName}"]
+	end
+	
+	profile.merge!( :name => profileName )
+
+	return profile
+end
+
+def svn_version
+    version_range = `./tools/svn/svnversion`.match('(\d+)(?::(\d+))?') rescue [-1]
+    version_range[2] || version_range[1] || ENV["BUILD_VCS_NUMBER"]
+end
+
+def windows_path_for(bash_path)
+  "#{bash_path}".gsub('/', '\\')
+end
+
+def windows_path_with_trailing_slash_for(bash_path)
+  "#{bash_path}//".gsub('/', '\\')
+end
+
+def tool(package, tool)
+  File.join(Dir.glob(File.join(package_root,"#{package}.*")).sort.last, "tools", tool)
+end

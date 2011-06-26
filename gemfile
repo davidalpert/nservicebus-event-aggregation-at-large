@@ -1,0 +1,11 @@
+source :rubygems
+
+gem 'albacore'
+gem 'xml-simple'
+
+group :dev do
+end
+
+group :tools do
+end
+

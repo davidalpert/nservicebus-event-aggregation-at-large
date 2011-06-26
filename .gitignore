@@ -43,3 +43,10 @@ _ReSharper*/
 
 # Office Temp Files
 ~$*
+
+#files generated and updated by VS10 extensions
+*.vs10x
+*.docstates
+
+#rake-related files
+Gemfile.lock
