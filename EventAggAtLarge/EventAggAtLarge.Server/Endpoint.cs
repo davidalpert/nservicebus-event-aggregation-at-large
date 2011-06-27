@@ -10,6 +10,9 @@ namespace EventAggAtLarge.Server
     {
     }
 }
+
+#region Profiles
+
 namespace EventAggAtLarge.Configuration
 {
     public class LiteConfig : IHandleProfile<Lite>
@@ -39,3 +42,5 @@ namespace EventAggAtLarge.Configuration
         }
     }
 }
+
+#endregion
