@@ -15,7 +15,7 @@ FileList["./Tools/albacore/**/*.rb"].each { |f| require f }
 source_root = "./EventAggAtLarge"
 test_root = "#{source_root}"
 lib_root = "./lib"
-package_root = "./Packages"
+package_root = "./EventAggAtLarge/Packages"
 tools_root = "./tools"
 webclient_intermediate_output_path = File.join(source_root, "obj")
 
@@ -30,8 +30,8 @@ msbuild_exe = File.join(ENV['windir'], 'Microsoft.NET','Framework',  'v4.0.30319
 
 CLEAN.include("#{source_root}/**/bin", "#{source_root}/**/obj", "#{test_root}/**/obj", "#{test_root}/**/bin")
 
-CLOBBER.include("./**/_*", "./**/*.user", "./**/*.cache", "./**/*.suo", "TestResult.xml")
-CLOBBER.exclude("./**/_catalogs", "./**/_controlTemplates", "./**/_layouts", "#{package_root}")
+CLOBBER.include("./**/_*", "./**/*.user", "./**/*.cache", "./**/*.suo", "TestResult.xml", "#{package_root}")
+CLOBBER.exclude("./**/_catalogs", "./**/_controlTemplates", "./**/Views/**/_*" )
 
 # ---------------------------------------------------------------------------------------------------------
 # and so begin the build script tasks/targets
@@ -56,7 +56,7 @@ namespace :setup do
 		desc "Setup dependencies for nuget packages"
 		task :packages do
 			FileList["**/packages.config"].each do |file|
-				sh "nuget install #{file} /OutputDirectory Packages"
+				sh "nuget install #{file} /OutputDirectory #{package_root}"
 			end
 		end
 	
