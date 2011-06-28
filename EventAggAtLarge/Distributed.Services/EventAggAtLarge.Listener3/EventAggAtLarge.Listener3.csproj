@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F8475996-24FA-45B6-B9C1-C403DB102D2E}</ProjectGuid>
+    <ProjectGuid>{C96E3F61-9744-43D7-9237-1BCDF501621B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EventAggAtLarge.Tests</RootNamespace>
-    <AssemblyName>EventAggAtLarge.Tests</AssemblyName>
+    <RootNamespace>EventAggAtLarge.Listener3</RootNamespace>
+    <AssemblyName>EventAggAtLarge.Listener3</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,19 +32,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
-      <HintPath>..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\log4net.dll</HintPath>
+      <HintPath>..\..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\log4net.dll</HintPath>
     </Reference>
     <Reference Include="NServiceBus">
-      <HintPath>..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.dll</HintPath>
+      <HintPath>..\..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.dll</HintPath>
     </Reference>
     <Reference Include="NServiceBus.Core">
-      <HintPath>..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.Core.dll</HintPath>
+      <HintPath>..\..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.Core.dll</HintPath>
     </Reference>
-    <Reference Include="NServiceBus.Testing">
-      <HintPath>..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.Testing.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\nunit.framework.dll</HintPath>
+    <Reference Include="NServiceBus.Host">
+      <HintPath>..\..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\NServiceBus.Host.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -55,7 +52,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Endpoint.cs" />
+    <Compile Include="Handlers\PaymentReceivedHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EventAggAtLarge.Messages\EventAggAtLarge.Messages.csproj">
+      <Project>{E43325BA-ED64-41F2-9CAE-DE0E03D20540}</Project>
+      <Name>EventAggAtLarge.Messages</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="NServiceBus.Host.exe.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

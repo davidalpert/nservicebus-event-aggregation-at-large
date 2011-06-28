@@ -3,9 +3,9 @@ using NServiceBus;
 
 namespace EventAggAtLarge.Messages
 {
-    public interface IPaymentApplied : IMessage
+    public interface IOrderCompleted : IMessage
     {
         string OrderNumber { get; set; }
-        decimal Amount { get; set; }
+        string Purchaser { get; set; }
     }
 }

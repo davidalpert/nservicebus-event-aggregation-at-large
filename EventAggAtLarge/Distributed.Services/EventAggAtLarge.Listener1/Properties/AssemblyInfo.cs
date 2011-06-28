@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EventAggAtLarge.Server2")]
+[assembly: AssemblyTitle("EventAggAtLarge.Listener1")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("EventAggAtLarge.Server2")]
+[assembly: AssemblyProduct("EventAggAtLarge.Listener1")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("f528e6a0-c2b7-4fb1-93b0-3b3ea864d5ca")]
+[assembly: Guid("44aa6177-07af-4e4e-8a4b-ee5460d0c1c0")]
 
 // Version information for an assembly consists of the following four values:
 //
