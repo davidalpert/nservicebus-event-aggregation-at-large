@@ -45,6 +45,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\..\..\lib\Community.NServiceBus.2.5.0.1446\.net 4.0\binaries\System.Data.SQLite.DLL</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Endpoint.cs" />
-    <Compile Include="Handlers\PaymentReceivedHandler.cs" />
+    <Compile Include="Handlers\OrderCompleted_DumpToERP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
