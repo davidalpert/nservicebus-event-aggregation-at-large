@@ -42,8 +42,6 @@ namespace EventAggAtLarge.Server.Handlers
                 m.OrderNumber = message.OrderNumber;
                 m.Purchaser = message.Payee;
             });
-
-            // now what?
         }
     }
 

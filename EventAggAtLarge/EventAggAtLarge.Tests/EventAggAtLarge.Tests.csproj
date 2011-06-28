@@ -53,9 +53,26 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="xunit">
+      <HintPath>..\packages\xunit.1.8.0.1545\lib\xunit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Server_Handler_Facts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EventAggAtLarge.Messages\EventAggAtLarge.Messages.csproj">
+      <Project>{E43325BA-ED64-41F2-9CAE-DE0E03D20540}</Project>
+      <Name>EventAggAtLarge.Messages</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EventAggAtLarge.Server\EventAggAtLarge.Server.csproj">
+      <Project>{72AA2BE5-3619-4D1A-9F90-47538D70318F}</Project>
+      <Name>EventAggAtLarge.Server</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
