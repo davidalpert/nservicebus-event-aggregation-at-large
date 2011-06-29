@@ -12,7 +12,7 @@ namespace EventAggAtLarge.Server.Handlers
     {
         public void Handle(IOrderCompleted message)
         {
-            //throw new TimeoutException("twitter is temporarily unavilable...");
+            throw new TimeoutException("twitter is temporarily unavilable...");
             Console.WriteLine("Tweet to our competitors: 'hey, @eurobits, we just sold another one!'");
         }
     }
