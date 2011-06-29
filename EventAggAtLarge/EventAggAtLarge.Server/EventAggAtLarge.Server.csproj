@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Endpoint.cs" />
     <Compile Include="Handlers\PaymentReceivedHandler.cs" />
+    <Compile Include="Modules\LoggingModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
