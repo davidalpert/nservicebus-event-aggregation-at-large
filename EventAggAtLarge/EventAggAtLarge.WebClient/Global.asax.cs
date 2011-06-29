@@ -40,6 +40,7 @@ namespace EventAggAtLarge.WebClient
                  )
                 .XmlSerializer()                // serialize messages as XML
                 .MsmqTransport()                // use MSMQ as transactional transport
+                    .IsTransactional(true)
                 .UnicastBus()                   // use unicast messaging, the only option out-of-the-box
                 .CreateBus()
                 .Start();
